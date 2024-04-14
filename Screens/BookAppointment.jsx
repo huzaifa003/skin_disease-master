@@ -1,4 +1,3 @@
-// BookAppointment.js
 import { useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -7,7 +6,10 @@ import { uploadBytes, ref as refStorage } from "firebase/storage";
 import { set, ref } from "firebase/database";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, storage, db } from "../Components/DB";
-import { launchImageLibrary } from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+
 
 export default function BookAppointment() {
     const navigation = useNavigation();
@@ -26,36 +28,54 @@ export default function BookAppointment() {
     }, []);
 
     async function handleImageUpload() {
-        if (Platform.OS === 'android') {
-            const hasPermission = await requestStoragePermission();
-            if (!hasPermission) {
-                Alert.alert('Permission denied', 'Storage permission is required to select images.');
-                return;
-            }
+        let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Permission to access camera roll is required!");
+            return;
         }
 
-        const options = {
-            storageOptions: { skipBackup: true, path: 'images' },
-            mediaType: 'photo',
-        };
-
-        launchImageLibrary(options, (response) => {
-            if (response.didCancel) {
-                console.log('User cancelled image picker');
-            } else if (response.error) {
-                console.error('ImagePicker Error: ', response.error);
-            } else {
-                setImage({ uri: response.assets[0].uri });
-                console.log('Image selected: ', response.assets[0].uri);
-            }
+        let pickerResult = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
         });
+
+        if (pickerResult.canceled) {
+            console.log('User cancelled image picker');
+        } else if (pickerResult.assets && pickerResult.assets.length > 0) {
+            const selectedImage = pickerResult.assets[0];
+            const jpgUri = await convertToJpg(selectedImage.uri);
+            if (jpgUri) {
+                setImage({ uri: jpgUri });
+                console.log('Image converted and selected:', jpgUri);
+            } else {
+                alert('Failed to convert image to JPG format.');
+            }
+        }
+    }
+
+    async function convertToJpg(originalUri) {
+        try {
+            // Manipulate the image: This can include resizing if you want
+            const result = await ImageManipulator.manipulateAsync(
+                originalUri,
+                // Actions array can include other manipulations, e.g., resize, rotate
+                [], // No actions like resize or rotate, just convert format here
+                // Options for output format and compression
+                { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            return result.uri;
+        } catch (error) {
+            console.log('Failed to convert image to JPG:', error);
+            return null;
+        }
     }
 
     async function handleSendData() {
         if (user && image) {
             const path = `${Date.now()}${Math.random()}`.replace(/[.#$[\]/]/g, "");
             const imageStorageRef = refStorage(storage, `images/${user}/${path}`);
-
             try {
                 const response = await fetch(image.uri);
                 const blob = await response.blob();
@@ -129,6 +149,9 @@ export default function BookAppointment() {
         </KeyboardAvoidingView>
     );
 }
+
+// Styles remain unchanged
+
 
 const styles = StyleSheet.create({
     container: {

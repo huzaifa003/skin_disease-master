@@ -1,10 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth, getReactNativePersistence } from "firebase/auth";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import {getStorage} from "firebase/storage";
 
-import { ReactNativeAsyncStorage } from "@react-native-async-storage/async-storage";
+// Correct the import for AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// import { ReactNativeAsyncStorage } from "@react-native-async-storage/async-storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -22,7 +25,9 @@ const firebaseConfig = {
 // Initialize Firebase
 // Initialize Firebase
 const firebase_app = initializeApp(firebaseConfig);
-const auth = getAuth(firebase_app, { persistence: getReactNativePersistence(ReactNativeAsyncStorage) });
+const auth = initializeAuth(firebase_app, {
+  persistence: getReactNativePersistence(AsyncStorage)
+});
 const db = getDatabase(firebase_app);
 const storage = getStorage(firebase_app, "gs://skin-disease-4711e.appspot.com");
 export { firebase_app, auth, db, storage};

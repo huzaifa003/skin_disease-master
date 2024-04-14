@@ -17,7 +17,7 @@ import ChatDiseaseQuery from './Screens/ChatDiseaseQuery';
 import Report from './Screens/Report';
 
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+// import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ShowDetails from './Screens/ShowDetails';
 import MapScreen from './Screens/MapScreen';
 import DermatologistHome from './Screens/DermatologistHome';
@@ -25,7 +25,15 @@ import GiveFeedback from './Screens/GiveFeedback';
 
 import { Context } from './Global/Context';
 
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import { Alert } from 'react-native';
+
+
+// Import Firebase functions
+import { signOut } from "firebase/auth";
+import { auth } from './Components/DB';
 
 
 export default function App() {
@@ -36,33 +44,68 @@ export default function App() {
   const Stack = createNativeStackNavigator();
 
 
+
   const TabNavigator = () => {
     return (
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             let iconName;
-
             if (route.name === 'ShowAppointments') {
               iconName = 'calendar';
             } else if (route.name === 'MapScreen') {
               iconName = 'map';
+            } else if (route.name === 'Logout') {
+              iconName = 'logout';
             }
-
             return <MaterialCommunityIcons name={iconName} size={24} color={color} />;
           },
         })}
       >
         <Tab.Screen
-          initialParams={{ ShowAppointments }}
           name="ShowAppointments"
           component={ShowAppointments}
-          options={{ title: 'Show Appointments' }}
+          options={{ title: 'Dashboard' }}
         />
         <Tab.Screen name="MapScreen" component={MapScreen} />
+        <Tab.Screen
+          name="Logout"
+          component={() => null} // No need to render anything
+          options={{ title: 'Logout' }}
+          listeners={({ navigation }) => ({
+            tabPress: e => {
+              e.preventDefault(); // Prevent default action
+              Alert.alert(
+                'Log Out',
+                'Are you sure you want to log out?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'OK', onPress: () => handleLogout(navigation) },
+                ],
+                { cancelable: false },
+              );
+            }
+          })}
+        />
       </Tab.Navigator>
     );
   };
+
+  const handleLogout = (navigation) => {
+    signOut(auth).then(() => {
+      // Sign-out successful.
+      console.log('User logged out successfully');
+      navigation.reset({ index: 0, routes: [{ name: "SignIn" }] }); // Assuming 'SignIn' is your login screen
+    }).catch((error) => {
+      // An error happened.
+      console.error('Logout failed', error);
+      Alert.alert('Logout Error', 'Failed to log out. Please try again.');
+    });
+  };
+
+
+
+
 
   const stackNavigator = () => {
     return (
@@ -83,9 +126,9 @@ export default function App() {
           options={{ title: "Sign In Page" }}
         />
 
-        <Stack.Screen name="TabNavigator" component={TabNavigator} options={{headerShown: false}} />
+        <Stack.Screen name="TabNavigator" component={TabNavigator} options={{ headerShown: false }} />
 
-      
+
 
         <Stack.Screen
           name='ShowAppointments'
@@ -120,7 +163,7 @@ export default function App() {
           options={{ title: 'Map Screen' }}
         />
 
-<Stack.Screen
+        <Stack.Screen
           name="Home"
           component={Home}
           options={{ title: "Home-Page" }}
@@ -138,7 +181,7 @@ export default function App() {
           options={{ title: 'Dermatologist Home' }}
         />
 
-      
+
 
         <Stack.Screen
           name="PostData"
@@ -146,13 +189,13 @@ export default function App() {
           options={{ title: "Add Data" }}
         />
 
-<Stack.Screen
+        <Stack.Screen
           name='ChatDiseaseQuery'
           component={ChatDiseaseQuery}
           options={{ title: 'ChatDiseaseQuery' }}
         />
 
-<Stack.Screen
+        <Stack.Screen
           name='Report'
           component={Report}
           options={{ title: 'Report' }}
