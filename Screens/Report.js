@@ -23,20 +23,53 @@ const ReportScreen = ({ route }) => {
       type: `image/${fileType}`
     });
 
+    // try {
+    //   fetch("https://tidy-octopus-diverse.ngrok-free.app", {
+    //     method: "GET",
+
+    //   })
+    //     .then(response => response.text())
+    //     .then(result => {
+    //       console.log("Success:", result);
+    //     })
+    //     .catch(error => {
+    //       console.error("Error:", error);
+    //     });
+    // }
+    // catch (error) {
+    //   console.error("Error:", error);
+    // }
 
 
-    console.log(formData)
-    fetch('http://tidy-octopus-diverse.ngrok-free.app/segment', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-      })
+
+
+    try {
+      const response = await fetch('https://tidy-octopus-diverse.ngrok-free.app/segment', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const responseImage = await response.blob();
+      // You can display this image or handle however you need
+      console.log('Upload successful', responseImage);
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Upload failed', error.toString());
+    }
+    ;
+
+
+
+
+
+
   };
 
   return (
