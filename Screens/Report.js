@@ -1,6 +1,7 @@
-// ReportScreen.js
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, CheckBox, Button, StyleSheet } from 'react-native';
+import { View, Text, Image, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import Checkbox from 'expo-checkbox';
+import axios from 'axios';
 
 const ReportScreen = ({ route }) => {
   const { imageUrl, classifiedDisease } = route.params;
@@ -11,6 +12,32 @@ const ReportScreen = ({ route }) => {
     console.log('Feedback submitted:', feedback);
     // Implement what happens when feedback is submitted, such as sending it to a server
   }
+
+  const uploadImage = async () => {
+    const uri = imageUrl; // assuming imageUrl is a direct path to the local file
+    const fileType = uri.split('.').pop(); // get file extension
+    const formData = new FormData();
+    formData.append('file', {
+      uri: imageUrl,
+      name: `photo.${fileType}`,
+      type: `image/${fileType}`
+    });
+
+
+
+    console.log(formData)
+    fetch('http://tidy-octopus-diverse.ngrok-free.app/segment', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+      })
+  };
 
   return (
     <View style={styles.container}>
@@ -23,10 +50,10 @@ const ReportScreen = ({ route }) => {
         value={classifiedDisease}
       />
       <View style={styles.checkboxContainer}>
-        <CheckBox
+        <Checkbox
           value={isValid}
           onValueChange={setIsValid}
-          style={styles.checkbox}
+          color={isValid ? '#4630EB' : undefined}
         />
         <Text style={styles.label}>Is the classification correct?</Text>
       </View>
@@ -44,6 +71,11 @@ const ReportScreen = ({ route }) => {
             title="Submit Feedback"
             onPress={handleSubmitFeedback}
             color="#1C2A3A"
+          />
+          <Button
+            title="Upload Image"
+            onPress={uploadImage}
+            color="#4CAF50"
           />
         </View>
       )}
