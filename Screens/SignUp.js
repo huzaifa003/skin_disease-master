@@ -67,7 +67,39 @@ const SignUp = ({ navigation }) => {
                 />
             )}
 
-            {idVerified && (
+            {isDermatologist && idVerified && (
+                <>
+                    {displayError && <Text style={styles.errorText}>{error}</Text>}
+
+                    <Input
+                        placeholder="Your Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        containerStyle={styles.inputContainer}
+                        inputStyle={styles.input}
+                        leftIcon={<Icon name="envelope" size={20} color="#1C2A3A" />}
+                    />
+
+                    <Input
+                        placeholder="Your Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        containerStyle={styles.inputContainer}
+                        inputStyle={styles.input}
+                        secureTextEntry
+                        leftIcon={<Icon name="lock" size={24} color="#1C2A3A" />}
+                    />
+
+                    <Button
+                        title="Sign Up"
+                        onPress={handleSignUp}
+                        buttonStyle={styles.button}
+                        titleStyle={styles.buttonTitle}
+                    />
+                </>
+            )}
+
+            {!isDermatologist && (
                 <>
                     {displayError && <Text style={styles.errorText}>{error}</Text>}
 
