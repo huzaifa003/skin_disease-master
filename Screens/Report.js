@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, Image, TextInput, StyleSheet, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import * as FileSystem from 'expo-file-system'; // Import Expo FileSystem
@@ -29,22 +29,23 @@ const ReportScreen = ({ route }) => {
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
+          'ngrok-skip-browser-warning':true,
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      
 
       const content = await response.blob();
-      const filePath = `${FileSystem.cacheDirectory}responseImage.${fileType}`;
+      const timestamp = new Date().getTime();
+      const filePath = `${FileSystem.cacheDirectory}responseImage_${timestamp}.${fileType}`;
+
       const blobData = new FileReader();
       blobData.onload = async () => {
         await FileSystem.writeAsStringAsync(filePath, blobData.result.split(',')[1], {
           encoding: FileSystem.EncodingType.Base64,
         });
-        setReturnedImageUrl(filePath);
-        
+        // Use the timestamp to bust the cache
+        setReturnedImageUrl(`${filePath}?time=${timestamp}`);
       };
       blobData.onerror = (e) => {
         console.error('FileReader error', e);
@@ -72,6 +73,7 @@ const ReportScreen = ({ route }) => {
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
+          'ngrok-skip-browser-warning':true,
         },
       });
 
@@ -80,7 +82,7 @@ const ReportScreen = ({ route }) => {
       }
 
       const content = await response.json();
-      console.log("content", content);
+      console.log(content);
       
     } catch (error) {
       console.error('Error:', error);
