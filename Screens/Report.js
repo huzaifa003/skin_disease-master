@@ -1,47 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import { ScrollView, View, Text, Image, TextInput, StyleSheet, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
-import axios from 'axios';
+import * as FileSystem from 'expo-file-system'; // Import Expo FileSystem
 
 const ReportScreen = ({ route }) => {
   const { imageUrl, classifiedDisease } = route.params;
   const [isValid, setIsValid] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [returnedImageUrl, setReturnedImageUrl] = useState(null); // State to hold the returned image URI
 
   function handleSubmitFeedback() {
     console.log('Feedback submitted:', feedback);
-    // Implement what happens when feedback is submitted, such as sending it to a server
   }
 
   const uploadImage = async () => {
-    const uri = imageUrl; // assuming imageUrl is a direct path to the local file
-    const fileType = uri.split('.').pop(); // get file extension
+    const uri = imageUrl;
+    const fileType = uri.split('.').pop();
     const formData = new FormData();
     formData.append('file', {
       uri: imageUrl,
       name: `photo.${fileType}`,
       type: `image/${fileType}`
     });
-
-    // try {
-    //   fetch("https://tidy-octopus-diverse.ngrok-free.app", {
-    //     method: "GET",
-
-    //   })
-    //     .then(response => response.text())
-    //     .then(result => {
-    //       console.log("Success:", result);
-    //     })
-    //     .catch(error => {
-    //       console.error("Error:", error);
-    //     });
-    // }
-    // catch (error) {
-    //   console.error("Error:", error);
-    // }
-
-
-
 
     try {
       const response = await fetch('https://tidy-octopus-diverse.ngrok-free.app/segment', {
@@ -56,73 +36,126 @@ const ReportScreen = ({ route }) => {
         throw new Error('Network response was not ok');
       }
 
-      const responseImage = await response.blob();
-      // You can display this image or handle however you need
-      console.log('Upload successful', responseImage);
+      const content = await response.blob();
+      const filePath = `${FileSystem.cacheDirectory}responseImage.${fileType}`;
+      const blobData = new FileReader();
+      blobData.onload = async () => {
+        await FileSystem.writeAsStringAsync(filePath, blobData.result.split(',')[1], {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        setReturnedImageUrl(filePath);
+        
+      };
+      blobData.onerror = (e) => {
+        console.error('FileReader error', e);
+      };
+      blobData.readAsDataURL(content);
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Upload failed', error.toString());
     }
-    ;
-
-
-
-
-
-
   };
 
+  const generateClassification = async () => {
+    const uri = imageUrl;
+    const fileType = uri.split('.').pop();
+    const formData = new FormData();
+    formData.append('file', {
+      uri: imageUrl,
+      name: `photo.${fileType}`,
+      type: `image/${fileType}`
+    });
+
+    try {
+      const response = await fetch('https://kitten-tight-optionally.ngrok-free.app/classify', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const content = await response.json();
+      console.log("content", content);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Upload failed', error.toString());
+    }
+  }
+
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Disease Classification Report</Text>
-      <Image source={{ uri: imageUrl }} style={styles.image} />
-      <Text style={styles.label}>Classified Disease:</Text>
-      <TextInput
-        style={styles.input}
-        editable={false}
-        value={classifiedDisease}
-      />
-      <View style={styles.checkboxContainer}>
-        <Checkbox
-          value={isValid}
-          onValueChange={setIsValid}
-          color={isValid ? '#4630EB' : undefined}
+
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <View style={styles.container}>
+        <Text style={styles.header}>Disease Classification Report</Text>
+        <Image source={{ uri: imageUrl }} style={styles.image} />
+        {returnedImageUrl && (
+          <View>
+            <Text style={styles.label}>Returned Image:</Text>
+            <Image source={{ uri: returnedImageUrl }} style={styles.image} />
+          </View>
+        )}
+        <Text style={styles.label}>Classified Disease:</Text>
+        <TextInput
+          style={styles.input}
+          editable={false}
+          value={classifiedDisease}
         />
-        <Text style={styles.label}>Is the classification correct?</Text>
-      </View>
-      {!isValid && (
-        <View>
-          <Text style={styles.label}>Feedback:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter feedback here"
-            value={feedback}
-            onChangeText={setFeedback}
-            multiline
+        <View style={styles.checkboxContainer}>
+          <Checkbox
+            value={isValid}
+            onValueChange={setIsValid}
+            color={isValid ? '#4630EB' : undefined}
           />
-          <Button
-            title="Submit Feedback"
-            onPress={handleSubmitFeedback}
-            color="#1C2A3A"
-          />
-          <Button
-            title="Upload Image"
-            onPress={uploadImage}
-            color="#4CAF50"
-          />
+          <Text style={styles.label}>Is the classification correct?</Text>
         </View>
-      )}
-    </View>
+        {!isValid && (
+          <View>
+            <Text style={styles.label}>Feedback:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter feedback here"
+              value={feedback}
+              onChangeText={setFeedback}
+              multiline
+            />
+            <Button
+              title="Submit Feedback"
+              onPress={handleSubmitFeedback}
+              color="#1C2A3A"
+            />
+            <Button
+              title="Upload Image"
+              onPress={uploadImage}
+              color="#4CAF50"
+            />
+            <Button
+              title="Generate Classifications"
+              onPress={generateClassification}
+              color="#4CAF50"
+            />
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 20,
     backgroundColor: '#f4f4f8',
+  },
+  contentContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
     fontSize: 24,
@@ -149,6 +182,26 @@ const styles = StyleSheet.create({
   },
   checkbox: {
     marginRight: 8,
+  },
+  label: {
+    fontSize: 16,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  image: {
+    width: 300,
+    height: 300,
+    resizeMode: 'contain',
+    marginBottom: 20,
+  },
+
+  checkboxContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    alignItems: 'center',
   },
   label: {
     fontSize: 16,
