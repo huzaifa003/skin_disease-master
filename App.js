@@ -29,6 +29,9 @@ import GiveFeedback from './Screens/GiveFeedback';
 import { Context } from './Global/Context';
 import { DermatologistHome } from './Screens/DermatologistHome';
 import { GroupChatScreen } from './Screens/GroupChatScreen';
+import QuestionsScreen from './Screens/QuestionsScreen';
+import AskQuestion from './Screens/AskQuestion';
+import QuestionDetailScreen from './Screens/QuestionDetailScreen';
 
 export default function App() {
   const [background, setBackground] = React.useState("#FAF9F6");
@@ -128,6 +131,7 @@ export default function App() {
         <Tab.Screen name="Home" component={PatientHome} options={{ title: 'Home' }} />
         <Tab.Screen name="CameraScreen" component={CameraScreen} options={{ title: 'Camera' }} />
         <Tab.Screen name='GroupScreen' component={GroupChatScreen} options={{title: "Group Chat"}} />
+        <Tab.Screen name='QuestionsScreen' component={QuestionsScreen} options={{title: "Questions"}} />
         <Tab.Screen name="MapScreen" component={MapScreen} options={{ title: 'Map' }} />
         <Tab.Screen
           name="Logout"
@@ -226,6 +230,8 @@ export default function App() {
       <Stack.Screen name='ChatDiseaseQuery' component={ChatDiseaseQuery} options={{ title: 'Chat Disease Query' }} />
       <Stack.Screen name='Report' component={Report} options={{ title: 'Report' }} />
       <Stack.Screen name='ShowDetails' component={ShowDetails} options={{ title: 'Show Details' }} />
+      <Stack.Screen name='AskQuestion' component={AskQuestion} options={{ title: 'Ask Question' }} />
+      <Stack.Screen name='QuestionDetail' component={QuestionDetailScreen} options={{ title: 'Question Details' }} />
       <Stack.Screen name="TabNavigatorDerm" component={TabNavigatorDerm} options={{ headerShown: false }} />
       <Stack.Screen name="TabNavigatorPatient" component={TabNavigatorPatient} options={{ headerShown: false }} />
 
