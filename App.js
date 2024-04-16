@@ -70,13 +70,19 @@ export default function App() {
             let iconName;
             switch (route.name) {
               case 'DermatologistHome':
-                iconName = 'calendar';
+                iconName = 'home'; // Changed to 'home' for clarity
                 break;
               case 'ShowAppointments':
-                iconName = 'home';
+                iconName = 'calendar-clock'; // Changed to 'calendar-clock' to better represent scheduling
+                break;
+              case 'QuestionsScreen':
+                iconName = 'forum'; // Changed to 'forum' to better represent Q&A
+                break;
+              case 'MapScreen':
+                iconName = 'map'; // Already appropriate
                 break;
               default:
-                iconName = 'alert-circle';
+                iconName = 'alert-circle'; // Default case (unlikely needed)
             }
             return <MaterialCommunityIcons name={iconName} size={24} color={color} />;
           },
@@ -122,6 +128,18 @@ export default function App() {
               case 'CameraScreen':
                 iconName = 'camera';
                 break;
+              case 'GroupScreen':
+                iconName = 'message-text'; // Changed to 'message-text' for better representation
+                break;
+              case 'QuestionsScreen':
+                iconName = 'forum'; // Changed to 'forum' to better represent questions/discussions
+                break;
+              case 'MapScreen':
+                iconName = 'map';
+                break;
+              case 'Logout':
+                iconName = 'logout'; // Using 'logout' for clarity
+                break;
               default:
                 iconName = 'alert-circle';
             }
@@ -157,70 +175,70 @@ export default function App() {
     );
   };
 
-  const TabNavigator = () => {
-    return (
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ color, size }) => {
-            let iconName;
-            switch (route.name) {
-              case 'ShowAppointments':
-                iconName = 'calendar';
-                break;
-              case 'MapScreen':
-                iconName = 'map';
-                break;
-              case 'Logout':
-                iconName = 'logout';
-                break;
-              case 'Home':
-                iconName = 'home';
-                break;
-              case 'CameraScreen':
-                iconName = 'camera';
-                break;
-              default:
-                iconName = 'alert-circle';
-            }
-            return <MaterialCommunityIcons name={iconName} size={24} color={color} />;
-          },
-        })}
-      >
-        {userType === 'dermatologist' ? (
-          <>
-            <Tab.Screen name="DermatologistHome" component={ShowAppointments} options={{ title: 'Dermatologist Home' }} />
-            <Tab.Screen name="ShowAppointments" component={DermatologistHome} options={{ title: 'Appointments' }} />
-          </>
-        ) : (
-          <>
-            <Tab.Screen name="Home" component={Home} />
-            <Tab.Screen name="CameraScreen" component={CameraScreen} />
-            <Tab.Screen name='GroupScreen' component={GroupChatScreen} />
-          </>
-        )}
-        <Tab.Screen name="MapScreen" component={MapScreen} />
-        <Tab.Screen
-          name="Logout"
-          component={() => null} // No need to render anything
-          options={{ title: 'Logout' }}
-          listeners={({ navigation }) => ({
-            tabPress: e => {
-              e.preventDefault();
-              Alert.alert(
-                'Log Out',
-                'Are you sure you want to log out?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'OK', onPress: () => handleLogout(navigation) },
-                ],
-                { cancelable: false },
-              );
-            }
-          })}
-        />
-      </Tab.Navigator>
-    );
-  };
+  // const TabNavigator = () => {
+  //   return (
+  //     <Tab.Navigator
+  //       screenOptions={({ route }) => ({
+  //         tabBarIcon: ({ color, size }) => {
+  //           let iconName;
+  //           switch (route.name) {
+  //             case 'ShowAppointments':
+  //               iconName = 'calendar';
+  //               break;
+  //             case 'MapScreen':
+  //               iconName = 'map';
+  //               break;
+  //             case 'Logout':
+  //               iconName = 'logout';
+  //               break;
+  //             case 'Home':
+  //               iconName = 'home';
+  //               break;
+  //             case 'CameraScreen':
+  //               iconName = 'camera';
+  //               break;
+  //             default:
+  //               iconName = 'alert-circle';
+  //           }
+  //           return <MaterialCommunityIcons name={iconName} size={24} color={color} />;
+  //         },
+  //       })}
+  //     >
+  //       {userType === 'dermatologist' ? (
+  //         <>
+  //           <Tab.Screen name="DermatologistHome" component={ShowAppointments} options={{ title: 'Dermatologist Home' }} />
+  //           <Tab.Screen name="ShowAppointments" component={DermatologistHome} options={{ title: 'Appointments' }} />
+  //         </>
+  //       ) : (
+  //         <>
+  //           <Tab.Screen name="Home" component={Home} />
+  //           <Tab.Screen name="CameraScreen" component={CameraScreen} />
+  //           <Tab.Screen name='GroupScreen' component={GroupChatScreen} />
+  //         </>
+  //       )}
+  //       <Tab.Screen name="MapScreen" component={MapScreen} />
+  //       <Tab.Screen
+  //         name="Logout"
+  //         component={() => null} // No need to render anything
+  //         options={{ title: 'Logout' }}
+  //         listeners={({ navigation }) => ({
+  //           tabPress: e => {
+  //             e.preventDefault();
+  //             Alert.alert(
+  //               'Log Out',
+  //               'Are you sure you want to log out?',
+  //               [
+  //                 { text: 'Cancel', style: 'cancel' },
+  //                 { text: 'OK', onPress: () => handleLogout(navigation) },
+  //               ],
+  //               { cancelable: false },
+  //             );
+  //           }
+  //         })}
+  //       />
+  //     </Tab.Navigator>
+  //   );
+  // };
 
   const stackNavigator = () => (
     <Stack.Navigator>
