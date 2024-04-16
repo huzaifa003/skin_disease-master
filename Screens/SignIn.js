@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Image, TouchableOpacity } from 'react-native';
-import { Text, Input, Button } from 'react-native-elements';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Assuming you have this installed
+import { View, StyleSheet, KeyboardAvoidingView, Image, Switch, Text } from 'react-native';
+import { Input, Button } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { onAuthStateChanged, signInWithEmailAndPassword } from '@firebase/auth';
 import { auth } from '../Components/DB';
 import { Context } from '../Global/Context';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const SignIn = ({ navigation }) => {
   const { background, setBackground } = useContext(Context);
-
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDermatologist, setIsDermatologist] = useState(false);
+  const [idVerified, setIdVerified] = useState(false);
+  const [dermatologistID, setDermatologistID] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,19 +19,45 @@ const SignIn = ({ navigation }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigation.reset({ index: 0, routes: [{ name: 'ShowAppointments' }] });
+        // Depending on verification and type, navigate appropriately
+        if (isDermatologist && idVerified) {
+          AsyncStorage.setItem('userType', 'dermatologist').then(() => {
+            console.log('User Type:', 'dermatologist');
+            navigation.reset({ index: 0, routes: [{ name: 'TabNavigatorDerm' }] });
+          }
+          );
+
+
+        } else {
+          AsyncStorage.setItem('userType', 'patient').then(() => {
+            navigation.reset({ index: 0, routes: [{ name: 'TabNavigatorPatient' }] });
+          });
+
+        }
       }
     });
-    return unsubscribe; // Remember to unsubscribe on unmount
-  }, [navigation]);
+    return unsubscribe;
+  }, [navigation, isDermatologist, idVerified]);
+
+  const verifyDermatologistID = (id) => {
+    // Dummy verification logic
+    setIdVerified(id === "DERM");
+  };
 
   const handleSignIn = async () => {
     try {
-      if (email === "derm" && password === "derm") {
-        navigation.reset({ index: 0, routes: [{ name: 'DermatologistHome' }] });
+      await signInWithEmailAndPassword(auth, email, password);
+      if (isDermatologist && !idVerified) {
+        setError('Please verify your Dermatologist ID.');
+        setDisplayError(true);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
+        setDisplayError(false);
+        setError('');
+        if (isDermatologist && idVerified) {
+          navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
+        } else {
+          navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
+        }
       }
     } catch (error) {
       setError('Sign In failed: ' + error.message);
@@ -38,107 +65,97 @@ const SignIn = ({ navigation }) => {
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode); // Toggle the dark mode state
-    setBackground(!isDarkMode ? '#dddddd' : '#D1D5DB'); // Set background color to light or dark
-  };
-
-  // Styles are moved out of the component body to prevent re-creation on each render
   const styles = getStyles(background);
 
-  
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <Image
-        source={require('../assets/Vector.png')} // Make sure this path is correct
+        source={require('../assets/Vector.png')}
         style={styles.logo}
       />
       <Text h3 style={styles.title}>DermaCare</Text>
-      <Text style={styles.tagline}>Hi, Welcome Back!</Text>
 
-      {displayError && <Text style={styles.errorText}>{error}</Text>}
+      <View style={styles.switchContainer}>
+        <Text style={styles.switchLabel}>I am a Dermatologist</Text>
+        <Switch
+          value={isDermatologist}
+          onValueChange={(value) => {
+            setIsDermatologist(value);
+            setIdVerified(false); // Reset verification when switching roles
+          }}
+        />
+      </View>
 
-      
+      {isDermatologist && (
+        <Input
+          placeholder="Enter Dermatologist ID"
+          value={dermatologistID}
+          onChangeText={(id) => {
+            setDermatologistID(id);
+            verifyDermatologistID(id);
+          }}
+          errorMessage={idVerified ? '' : 'Verify with "DERM"'}
+        />
+      )}
 
-      <Input
-        placeholder="Your Email"
-        value={email}
-        onChangeText={setEmail}
-        containerStyle={styles.inputContainer}
-        inputStyle={styles.input}
-        leftIcon={
-          <Icon
-            name="envelope"
-            size={20}
-            color="#1C2A3A"
+      {!isDermatologist || idVerified ? (
+        <>
+          {displayError && <Text style={styles.errorText}>{error}</Text>}
+          <Input
+            placeholder="Your Email"
+            value={email}
+            onChangeText={setEmail}
+            containerStyle={styles.inputContainer}
+            inputStyle={styles.input}
+            leftIcon={<Icon name="envelope" size={20} color="#1C2A3A" />}
           />
-        }
-      />
-
-      <Input
-        placeholder="Your Password"
-        value={password}
-        onChangeText={setPassword}
-        containerStyle={styles.inputContainer}
-        inputStyle={styles.input}
-        secureTextEntry
-        leftIcon={
-          <Icon
-            name="lock"
-            size={24}
-            color="#1C2A3A"
+          <Input
+            placeholder="Your Password"
+            value={password}
+            onChangeText={setPassword}
+            containerStyle={styles.inputContainer}
+            inputStyle={styles.input}
+            secureTextEntry
+            leftIcon={<Icon name="lock" size={24} color="#1C2A3A" />}
           />
-        }
-      />
-
-      <Button
-        title="Sign In"
-        onPress={handleSignIn}
-        buttonStyle={styles.button}
-        titleStyle={styles.buttonTitle}
-      />
-
-<Button
-        // ... other button props ...
-        icon={
-          <Icon
-            name="moon-o" // Example icon name, change it according to your actual icon
-            size={15}
-            color="#1C2A3A"
+          <Button
+            title="Sign In"
+            onPress={handleSignIn}
+            buttonStyle={styles.button}
+            titleStyle={styles.buttonTitle}
           />
-        }
-        title="Toggle Theme"
-        onPress={toggleTheme}
-        buttonStyle={styles.toggleButton}
-        titleStyle={styles.toggleButtonTitle}
-      />
+        </>
+      ) : null}
     </KeyboardAvoidingView>
   );
 };
 
-// Define styles outside of the component to improve performance
 const getStyles = (background) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: background,
     padding: 20,
-    backgroundColor:'#FFFFFF', // Use the background state
   },
   logo: {
-    width: 50, // Adjust size as needed
-    height: 50, // Adjust size as needed
-    marginBottom: 15 ,
+    width: 50,
+    height: 50,
+    marginBottom: 20,
   },
   title: {
+    fontSize: 24,
+    marginBottom: 20,
     color: '#1C2A3A',
-    marginBottom: 5,
-    
   },
-  tagline: {
-    color: '#111928',
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  switchLabel: {
+    marginRight: 10,
     fontSize: 16,
-    marginBottom: 30,
   },
   inputContainer: {
     width: '100%',
@@ -155,7 +172,7 @@ const getStyles = (background) => StyleSheet.create({
   errorText: {
     fontSize: 14,
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     color: '#FF0000',
     backgroundColor: '#F8D7DA',
     borderColor: '#F5C6CB',
@@ -164,33 +181,15 @@ const getStyles = (background) => StyleSheet.create({
     width: '100%',
     textAlign: 'center',
   },
- 
   button: {
-    width: '100%',
     backgroundColor: '#1C2A3A',
     borderRadius: 20,
     paddingVertical: 15,
-    marginVertical: 10,
+    width: '100%',
   },
   buttonTitle: {
     fontSize: 18,
     color: '#FFFFFF',
-    fontWeight: '600',
-  },
-
-  toggleButton: {
-    backgroundColor:'#F3F4F6', // Use the provided background color for the button
-    borderColor: '#1C2A3A', // Change this to the color you need
-    borderWidth: 1,
-    borderRadius: 20, // Adjust as needed for rounded corners
-    padding: 10,
-    marginRight:9,
-    marginVertical:10, // Spacing between button and other elements
-    width: '100%', // Set the width as per your design requirements
-  },
-  toggleButtonTitle: {
-    color: '#1C2A3A', // Text color for the toggle theme button
-    marginLeft:10, // Space between icon and text
   },
 });
 

@@ -1,15 +1,15 @@
 import { Camera, CameraType } from 'expo-camera';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function CameraScreen({ route, navigation }) {
-    const { chooseImage } = route.params;  // Getting the chooseImage function from navigation parameters
+export default function CameraScreen({ navigation }) {
     const [type, setType] = useState(CameraType.back);
     const [permission, requestPermission] = Camera.useCameraPermissions();
     const [loading, setLoading] = useState(false);
     const cameraRef = useRef(null);
 
+    // Handle not having camera permissions
     if (!permission) {
         return <View />;
     }
@@ -29,12 +29,9 @@ export default function CameraScreen({ route, navigation }) {
             const photo = await cameraRef.current.takePictureAsync();
             setLoading(false);
 
-            if (typeof chooseImage === 'function') {
-                chooseImage(photo);
-                navigation.goBack();
-            } else {
-                console.error('chooseImage is not a function, received:', chooseImage);
-            }
+            // Here you can handle the picture directly
+            // For example, navigate to another screen with the photo data
+            navigation.navigate('PhotoPreview', { photo });
         }
     }
 

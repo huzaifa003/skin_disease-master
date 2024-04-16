@@ -6,7 +6,7 @@ import { firebase_app, auth, db } from "../Components/DB";
 import { get, ref } from "firebase/database";
 import { TouchableOpacity } from "react-native";
 
-export default DermatologistHome = () => {
+const DermatologistHome = () => {
     const navigation = useNavigation();
     const [data, setData] = useState(null);
     const [users, setUsers] = useState(null);
@@ -114,6 +114,8 @@ export default DermatologistHome = () => {
         </View>
     );
 };
+
+export { DermatologistHome };
 
 const styles = StyleSheet.create({
     container: {
