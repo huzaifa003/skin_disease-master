@@ -43,7 +43,8 @@ export default function MapScreen() {
             return {
                 uv: result.result.uv, // Accessing 'result' key inside your JSON response
                 uv_max: result.result.uv_max,
-                
+                sunrise: result.result.sun_info.sun_times.sunrise,
+                sunset: result.result.sun_info.sun_times.sunset,
             };
         } catch (error) {
             console.error('error', error);
@@ -77,6 +78,8 @@ export default function MapScreen() {
                         <View style={styles.uvOverlay}>
                             <Text style={styles.uvText}>UV Index: {uvData.uv}</Text>
                             <Text style={styles.uvText}>Max UV Today: {uvData.uv_max}</Text>
+                            <Text style={styles.uvText}>Sunrise: {uvData.sunrise}</Text>
+                            <Text style={styles.uvText}>Sunset: {uvData.sunset}</Text>
                         </View>
                     )}
                 </MapView>
