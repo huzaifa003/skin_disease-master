@@ -219,6 +219,10 @@ export default function App() {
       <Stack.Screen name="SignUp" component={SignUp} options={{ title: "Sign Up Page" }} />
       <Stack.Screen name="SignIn" component={SignIn} options={{ title: "Sign In Page" }} />
       <Stack.Screen name='GiveFeedback' component={GiveFeedback} options={{ title: 'Give Feedback' }} />
+      <Stack.Screen name='BookAppointment' component={BookAppointment} options={{ title: 'Book Appointment' }} />
+      <Stack.Screen name='ChatDiseaseQuery' component={ChatDiseaseQuery} options={{ title: 'Chat Disease Query' }} />
+      <Stack.Screen name='Report' component={Report} options={{ title: 'Report' }} />
+      <Stack.Screen name='ShowDetails' component={ShowDetails} options={{ title: 'Show Details' }} />
       <Stack.Screen name="TabNavigatorDerm" component={TabNavigatorDerm} options={{ headerShown: false }} />
       <Stack.Screen name="TabNavigatorPatient" component={TabNavigatorPatient} options={{ headerShown: false }} />
 

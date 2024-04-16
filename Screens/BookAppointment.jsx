@@ -11,7 +11,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 
 
-export default function BookAppointment() {
+export default function BookAppointment( {route }) {
     const navigation = useNavigation();
     const [user, setUser] = useState(null);
     const [image, setImage] = useState(null);
@@ -25,7 +25,23 @@ export default function BookAppointment() {
                 navigation.navigate("Login");
             }
         });
-    }, []);
+
+
+        
+        const routeImageUri = route.params?.imageUri; // Use optional chaining to safely access the imageUri
+        if (routeImageUri) {
+            convertToJpg(routeImageUri).then((jpgUri) => {
+                if (jpgUri) {
+                    setImage({ uri: jpgUri });
+                    console.log('Image converted and selected:', jpgUri);
+                } else {
+                    Alert.alert('Error', 'Failed to convert image to JPG format.');
+                }
+            }
+            );
+
+        }
+    }, [route.params]);
 
     async function handleImageUpload() {
         let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();

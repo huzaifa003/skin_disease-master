@@ -120,7 +120,7 @@ const ReportScreen = ({ route }) => {
         {!isValid && (
           <View>
             <Text style={styles.label}>Feedback:</Text>
-            <TextInput
+            {/* <TextInput
               style={styles.input}
               placeholder="Enter feedback here"
               value={feedback}
@@ -131,7 +131,7 @@ const ReportScreen = ({ route }) => {
               title="Submit Feedback"
               onPress={handleSubmitFeedback}
               color="#1C2A3A"
-            />
+            /> */}
             <Button
               title="Upload Image"
               onPress={uploadImage}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { getStorage, ref as storageRef, getDownloadURL } from "firebase/storage";
 import { firebase_app, db } from "../Components/DB";
-import { update, ref} from "firebase/database";
+import { update, ref } from "firebase/database";
 
 export default function GiveFeedback({ route, navigation }) {
     const { uri, description, status, user, report } = route.params;
@@ -56,7 +56,11 @@ export default function GiveFeedback({ route, navigation }) {
             >
                 <View style={styles.innerContainer}>
                     <Text style={styles.title}>Give Feedback</Text>
-                    <Image source={{ uri: image }} style={styles.image} />
+                    
+                    <TouchableOpacity onPress={() => navigation.navigate('BookAppointment', { imageUri: image })}>
+                        <Image source={{ uri: image }} style={styles.image} />
+                    </TouchableOpacity>
+
                     <TextInput
                         style={styles.input}
                         value={editedStatus}
