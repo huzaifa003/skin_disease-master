@@ -70,10 +70,10 @@ export default function App() {
             let iconName;
             switch (route.name) {
               case 'DermatologistHome':
-                iconName = 'home'; // Changed to 'home' for clarity
+                iconName = 'calendar-clock'; // Changed to 'home' for clarity
                 break;
               case 'ShowAppointments':
-                iconName = 'calendar-clock'; // Changed to 'calendar-clock' to better represent scheduling
+                iconName = 'home'; // Changed to 'calendar-clock' to better represent scheduling
                 break;
               case 'QuestionsScreen':
                 iconName = 'forum'; // Changed to 'forum' to better represent Q&A
@@ -91,8 +91,9 @@ export default function App() {
           },
         })}
       >
-        <Tab.Screen name="DermatologistHome" component={DermatologistHome} options={{ title: 'Home' }} />
-        <Tab.Screen name="ShowAppointments" component={ShowAppointments} options={{ title: 'Appointments' }} />
+        <Tab.Screen name="ShowAppointments" component={ShowAppointments} options={{ title: 'Home' }} />
+        <Tab.Screen name="DermatologistHome" component={DermatologistHome} options={{ title: 'Appointments' }} />
+        
         <Tab.Screen name='QuestionsScreen' component={QuestionsScreen} options={{title: "Questions"}} />
         <Tab.Screen name="MapScreen" component={MapScreen} options={{ title: 'Map' }} />
         <Tab.Screen
