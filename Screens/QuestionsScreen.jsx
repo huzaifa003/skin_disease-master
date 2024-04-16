@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, TouchableNativeFeedback, TextInput, Platform } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, TouchableNativeFeedback, TextInput, Platform, SafeAreaView, KeyboardAvoidingView } from 'react-native';
 import { db } from '../Components/DB';
 import { ref, onValue } from 'firebase/database';
 
@@ -30,8 +30,8 @@ const QuestionsScreen = ({ navigation }) => {
     }, [sortDesc]);
 
     useEffect(() => {
-        const filtered = questions.filter(question => 
-            question.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        const filtered = questions.filter(question =>
+            question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             question.description.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredQuestions(filtered);
@@ -62,27 +62,33 @@ const QuestionsScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <TextInput
-                style={styles.searchInput}
-                placeholder="Search questions..."
-                value={searchTerm}
-                onChangeText={setSearchTerm}
-            />
-            <Button 
-                title={`Sort by Date: ${sortDesc ? 'Newest First' : 'Oldest First'}`} 
-                onPress={toggleSortOrder}
-                color="#007AFF"
-            />
-            <FlatList
-                data={filteredQuestions}
-                keyExtractor={item => item.id}
-                renderItem={renderQuestionItem}
-                contentContainerStyle={styles.listContainer}
-            />
-            <View style={styles.buttonContainer}>
-                <Button title="Ask a Question" onPress={() => navigation.navigate('AskQuestion')} color="#007AFF" />
-            </View>
+            <SafeAreaView>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                    <View style={styles.buttonContainer}>
+                        <Button title="Ask a Question" onPress={() => navigation.navigate('AskQuestion')} color="#007AFF" />
+                    </View>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search questions..."
+                        value={searchTerm}
+                        onChangeText={setSearchTerm}
+                    />
+                    <Button
+                        title={`Sort by Date: ${sortDesc ? 'Newest First' : 'Oldest First'}`}
+                        onPress={toggleSortOrder}
+                        color="#007AFF"
+                    />
+                    <FlatList
+                        data={filteredQuestions}
+                        keyExtractor={item => item.id}
+                        renderItem={renderQuestionItem}
+                        contentContainerStyle={styles.listContainer}
+                    />
+
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         </View>
+
     );
 };
 
