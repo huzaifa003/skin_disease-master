@@ -1,35 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Image, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import { ScrollView, View, Text, Image, TextInput, StyleSheet, Button, Alert, ActivityIndicator } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import * as FileSystem from 'expo-file-system'; // Import Expo FileSystem
 
 const ReportScreen = ({ route }) => {
   const { imageUrl, classifiedDisease } = route.params;
-  const [isValid, setIsValid] = useState(false);
-  const [feedback, setFeedback] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [progress, setProgress] = useState(0); // Progress for the upload
   const [returnedImageUrl, setReturnedImageUrl] = useState(null); // State to hold the returned image URI
   const [classificationResults, setClassificationResults] = useState(null); // State to hold classification results
 
-  // function handleSubmitFeedback() {
-  //   console.log('Feedback submitted:', feedback);
-  // }
-
-  {/* <Text style={styles.label}>Classified Disease:</Text>
-        <TextInput
-          style={styles.input}
-          editable={false}
-          value={classifiedDisease}
-        /> */}
-        {/* <View style={styles.checkboxContainer}>
-          <Checkbox
-            value={isValid}
-            onValueChange={setIsValid}
-            color={isValid ? '#4630EB' : undefined}
-          />
-          <Text style={styles.label}>Is the classification correct?</Text>
-        </View> */}
-
   const uploadImage = async () => {
+    setIsLoading(true); // Start loading
+    const interval = setInterval(() => {
+      setProgress(prevProgress => {
+        if (prevProgress >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prevProgress + 1; // Increment progress
+      });
+    }, 3000); // Update progress every 3 seconds
+
     const uri = imageUrl;
     const fileType = uri.split('.').pop();
     const formData = new FormData();
@@ -49,8 +42,6 @@ const ReportScreen = ({ route }) => {
         },
       });
 
-
-
       const content = await response.blob();
       const timestamp = new Date().getTime();
       const filePath = `${FileSystem.cacheDirectory}responseImage_${timestamp}.${fileType}`;
@@ -60,20 +51,26 @@ const ReportScreen = ({ route }) => {
         await FileSystem.writeAsStringAsync(filePath, blobData.result.split(',')[1], {
           encoding: FileSystem.EncodingType.Base64,
         });
-        // Use the timestamp to bust the cache
         setReturnedImageUrl(`${filePath}?time=${timestamp}`);
+        setIsLoading(false); // Stop loading
+        setProgress(0); // Reset progress
       };
       blobData.onerror = (e) => {
         console.error('FileReader error', e);
+        setIsLoading(false); // Stop loading on error
+        setProgress(0); // Reset progress
       };
       blobData.readAsDataURL(content);
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Upload failed', error.toString());
+      setIsLoading(false); // Stop loading on error
+      setProgress(0); // Reset progress
     }
   };
 
   const generateClassification = async () => {
+    setIsClassifying(true); // Start classifying
     const uri = imageUrl;
     const fileType = uri.split('.').pop();
     const formData = new FormData();
@@ -100,9 +97,11 @@ const ReportScreen = ({ route }) => {
       const content = await response.json();
       console.log('Classification results:', content);
       setClassificationResults(content); // Save the classification results
+      setIsClassifying(false); // Stop classifying
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Upload failed', error.toString());
+      setIsClassifying(false); // Stop classifying on error
     }
   }
 
@@ -126,6 +125,15 @@ const ReportScreen = ({ route }) => {
             color="#4CAF50"
           />
         </View>
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
+            <Text>Loading... {progress}%</Text>
+          </View>
+        )}
+        {isClassifying && (
+          <ActivityIndicator size="large" color="#0000ff" />
+        )}
         {classificationResults && (
           <View style={styles.resultsContainer}>
             <Text style={styles.label}>Results:</Text>
@@ -179,7 +187,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height : 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -193,6 +201,9 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 16,
     color: '#333',
+  },
+  loadingContainer: {
+    alignItems: 'center',
   },
 });
 
