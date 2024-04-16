@@ -8,10 +8,26 @@ const ReportScreen = ({ route }) => {
   const [isValid, setIsValid] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [returnedImageUrl, setReturnedImageUrl] = useState(null); // State to hold the returned image URI
+  const [classificationResults, setClassificationResults] = useState(null); // State to hold classification results
 
-  function handleSubmitFeedback() {
-    console.log('Feedback submitted:', feedback);
-  }
+  // function handleSubmitFeedback() {
+  //   console.log('Feedback submitted:', feedback);
+  // }
+
+  {/* <Text style={styles.label}>Classified Disease:</Text>
+        <TextInput
+          style={styles.input}
+          editable={false}
+          value={classifiedDisease}
+        /> */}
+        {/* <View style={styles.checkboxContainer}>
+          <Checkbox
+            value={isValid}
+            onValueChange={setIsValid}
+            color={isValid ? '#4630EB' : undefined}
+          />
+          <Text style={styles.label}>Is the classification correct?</Text>
+        </View> */}
 
   const uploadImage = async () => {
     const uri = imageUrl;
@@ -29,11 +45,11 @@ const ReportScreen = ({ route }) => {
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
-          'ngrok-skip-browser-warning':true,
+          'ngrok-skip-browser-warning': true,
         },
       });
 
-      
+
 
       const content = await response.blob();
       const timestamp = new Date().getTime();
@@ -73,7 +89,7 @@ const ReportScreen = ({ route }) => {
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
-          'ngrok-skip-browser-warning':true,
+          'ngrok-skip-browser-warning': true,
         },
       });
 
@@ -82,66 +98,46 @@ const ReportScreen = ({ route }) => {
       }
 
       const content = await response.json();
-      console.log(content);
-      
+      console.log('Classification results:', content);
+      setClassificationResults(content); // Save the classification results
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Upload failed', error.toString());
     }
   }
 
-
   return (
-
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.container}>
+    <ScrollView style={styles.container}>
+      <View style={styles.contentContainer}>
         <Text style={styles.header}>Disease Classification Report</Text>
         <Image source={{ uri: imageUrl }} style={styles.image} />
         {returnedImageUrl && (
-          <View>
-            <Text style={styles.label}>Returned Image:</Text>
-            <Image source={{ uri: returnedImageUrl }} style={styles.image} />
-          </View>
+          <Image source={{ uri: returnedImageUrl }} style={styles.image} />
         )}
-        <Text style={styles.label}>Classified Disease:</Text>
-        <TextInput
-          style={styles.input}
-          editable={false}
-          value={classifiedDisease}
-        />
-        <View style={styles.checkboxContainer}>
-          <Checkbox
-            value={isValid}
-            onValueChange={setIsValid}
-            color={isValid ? '#4630EB' : undefined}
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Upload Image"
+            onPress={uploadImage}
+            color="#4CAF50"
           />
-          <Text style={styles.label}>Is the classification correct?</Text>
+          <Button
+            title="Generate Classifications"
+            onPress={generateClassification}
+            color="#4CAF50"
+          />
         </View>
-        {!isValid && (
-          <View>
-            <Text style={styles.label}>Feedback:</Text>
-            {/* <TextInput
-              style={styles.input}
-              placeholder="Enter feedback here"
-              value={feedback}
-              onChangeText={setFeedback}
-              multiline
-            />
-            <Button
-              title="Submit Feedback"
-              onPress={handleSubmitFeedback}
-              color="#1C2A3A"
-            /> */}
-            <Button
-              title="Upload Image"
-              onPress={uploadImage}
-              color="#4CAF50"
-            />
-            <Button
-              title="Generate Classifications"
-              onPress={generateClassification}
-              color="#4CAF50"
-            />
+        {classificationResults && (
+          <View style={styles.resultsContainer}>
+            <Text style={styles.label}>Results:</Text>
+            {classificationResults.map((result, index) => {
+              const diseaseName = Object.keys(result)[0];
+              const confidence = result[diseaseName];
+              return (
+                <Text key={index} style={styles.resultText}>
+                  {diseaseName}: {confidence.toFixed(2)}%
+                </Text>
+              );
+            })}
           </View>
         )}
       </View>
@@ -152,61 +148,51 @@ const ReportScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#f4f4f8',
   },
   contentContainer: {
+    padding: 20,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   header: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 20,
   },
   image: {
-    width: 300,
-    height: 300,
-    resizeMode: 'contain',
-    marginBottom: 20,
-  },
-  input: {
     width: '100%',
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  checkbox: {
-    marginRight: 8,
-  },
-  label: {
-    fontSize: 16,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  image: {
-    width: 300,
-    height: 300,
+    height: 200,
     resizeMode: 'contain',
+    borderRadius: 10,
     marginBottom: 20,
   },
-
-  checkboxContainer: {
+  buttonContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
     marginBottom: 20,
-    alignItems: 'center',
+  },
+  resultsContainer: {
+    width: '100%',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 20,
   },
   label: {
+    fontSize: 18,
+    color: '#555',
+    marginBottom: 10,
+  },
+  resultText: {
     fontSize: 16,
+    color: '#333',
   },
 });
 
