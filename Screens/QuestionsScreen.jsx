@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, TouchableNativeFeedback, Platform } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, TouchableNativeFeedback, TextInput, Platform } from 'react-native';
 import { db } from '../Components/DB';
 import { ref, onValue } from 'firebase/database';
 
 const QuestionsScreen = ({ navigation }) => {
     const [questions, setQuestions] = useState([]);
+    const [filteredQuestions, setFilteredQuestions] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [sortDesc, setSortDesc] = useState(true);
 
     useEffect(() => {
@@ -22,12 +24,22 @@ const QuestionsScreen = ({ navigation }) => {
             // Sort questions by date here if you want the default sort to be by date
             loadedQuestions.sort((a, b) => sortDesc ? b.date - a.date : a.date - b.date); // Sort by date descending
             setQuestions(loadedQuestions);
+            setFilteredQuestions(loadedQuestions);
         });
         return () => unsubscribe();
     }, [sortDesc]);
 
+    useEffect(() => {
+        const filtered = questions.filter(question => 
+            question.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            question.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredQuestions(filtered);
+    }, [searchTerm, questions]);
+
     const toggleSortOrder = () => {
         setSortDesc(!sortDesc);
+        setQuestions([...questions.reverse()]);
     };
 
     const renderQuestionItem = ({ item }) => {
@@ -50,13 +62,19 @@ const QuestionsScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+            <TextInput
+                style={styles.searchInput}
+                placeholder="Search questions..."
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+            />
             <Button 
                 title={`Sort by Date: ${sortDesc ? 'Newest First' : 'Oldest First'}`} 
                 onPress={toggleSortOrder}
                 color="#007AFF"
             />
             <FlatList
-                data={questions}
+                data={filteredQuestions}
                 keyExtractor={item => item.id}
                 renderItem={renderQuestionItem}
                 contentContainerStyle={styles.listContainer}
@@ -72,6 +90,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+    },
+    searchInput: {
+        fontSize: 16,
+        padding: 10,
+        margin: 10,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
     },
     listContainer: {
         padding: 10,
