@@ -81,6 +81,9 @@ export default function App() {
               case 'MapScreen':
                 iconName = 'map'; // Already appropriate
                 break;
+              case 'Logout':
+                iconName = 'logout'; // Changed to 'logout' for clarity
+                break;
               default:
                 iconName = 'alert-circle'; // Default case (unlikely needed)
             }
