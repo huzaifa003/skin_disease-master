@@ -13,7 +13,7 @@ import { auth } from './Components/DB';
 // Screens Imports
 import SignIn from './Screens/SignIn';
 import SignUp from './Screens/SignUp';
-import Home from './Screens/Home';
+import { PatientHome } from './Screens/PatientHome';
 import PostData from './Screens/PostData';
 import CameraScreen from './Screens/CameraScreen';
 import BookAppointment from './Screens/BookAppointment';
@@ -103,7 +103,7 @@ export default function App() {
       </Tab.Navigator>
     );
   };
-  
+
   const TabNavigatorPatient = () => {
     return (
       <Tab.Navigator
@@ -124,7 +124,7 @@ export default function App() {
           },
         })}
       >
-        <Tab.Screen name="Home" component={Home} options={{ title: 'Home' }} />
+        <Tab.Screen name="Home" component={PatientHome} options={{ title: 'Home' }} />
         <Tab.Screen name="CameraScreen" component={CameraScreen} options={{ title: 'Camera' }} />
         <Tab.Screen name="MapScreen" component={MapScreen} options={{ title: 'Map' }} />
         <Tab.Screen
@@ -149,7 +149,7 @@ export default function App() {
       </Tab.Navigator>
     );
   };
-  
+
   const TabNavigator = () => {
     return (
       <Tab.Navigator

@@ -54,9 +54,9 @@ const SignIn = ({ navigation }) => {
         setDisplayError(false);
         setError('');
         if (isDermatologist && idVerified) {
-          navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'TabNavigatorDerm' }] });
         } else {
-          navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'TabNavigatorPatient' }] });
         }
       }
     } catch (error) {

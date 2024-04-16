@@ -107,7 +107,7 @@ const ShowAppointments = () => {
       if (currentUser) {
         // User is logged in
       } else {
-        navigation.navigate('Login');
+        navigation.navigate('SignIn');
       }
     });
   }, []);

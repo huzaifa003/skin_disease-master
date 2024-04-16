@@ -22,7 +22,7 @@ export default function BookAppointment( {route }) {
             if (currentUser) {
                 setUser(currentUser.uid);
             } else {
-                navigation.navigate("Login");
+                navigation.navigate("SignIn");
             }
         });
 
