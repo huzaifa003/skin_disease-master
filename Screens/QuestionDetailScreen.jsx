@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, ScrollView } from 'react-native';
-import { db } from '../Components/DB';
-import { ref, onValue, push, serverTimestamp } from 'firebase/database';
+import { db, auth } from '../Components/DB';
+import { ref, push, serverTimestamp, onValue } from 'firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const QuestionDetailScreen = ({ route }) => {
     const { questionId } = route.params;
     const [question, setQuestion] = useState(null);
     const [newAnswer, setNewAnswer] = useState('');
+    const [userType, setUserType] = useState('');
 
     useEffect(() => {
         const questionRef = ref(db, `forums/questions/${questionId}`);
@@ -25,24 +27,52 @@ const QuestionDetailScreen = ({ route }) => {
         return () => unsubscribe();
     }, [questionId]);
 
-    const handleAddAnswer = () => {
+    useEffect(() => {
+        // Fetch user type from AsyncStorage
+        const fetchUserType = async () => {
+            const type = await AsyncStorage.getItem('userType');
+            setUserType(type || '');
+        };
+        fetchUserType();
+    }, []);
+
+    const handleAddAnswer = async () => {
         if (newAnswer.trim() === '') {
             Alert.alert("Error", "Please enter an answer before submitting.");
             return;
         }
+
+        const userId = auth.currentUser ? auth.currentUser.uid : null;
+        if (!userId) {
+            Alert.alert('Error', 'You are not logged in.');
+            return;
+        }
+
         const answersRef = ref(db, `forums/questions/${questionId}/answers`);
-        push(answersRef, {
+        const answerData = {
             text: newAnswer,
-            userId: "userId", // Replace with actual user ID
+            userId: userId,
+            userType: userType,
             timestamp: serverTimestamp(),
-        }).then(() => {
-            Alert.alert("Success", "Your answer has been posted.");
-            setNewAnswer('');
-        }).catch(error => {
-            Alert.alert("Error", "Failed to post your answer.");
-            console.error(error);
-        });
+        };
+
+        push(answersRef, answerData)
+            .then(() => {
+                Alert.alert("Success", "Your answer has been posted.");
+                setNewAnswer('');
+            })
+            .catch(error => {
+                Alert.alert("Error", "Failed to post your answer.");
+                console.error(error);
+            });
     };
+
+    const renderAnswerItem = ({ item }) => (
+        <View style={styles.answerItem}>
+            <Text style={styles.answerText}>{item.text}</Text>
+            {item.userType === 'dermatologist' && <Text style={styles.verifiedBadge}>Verified by Dermatologist</Text>}
+        </View>
+    );
 
     return (
         <ScrollView style={styles.container}>
@@ -54,11 +84,7 @@ const QuestionDetailScreen = ({ route }) => {
                 <FlatList
                     data={question?.answers}
                     keyExtractor={item => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.answerItem}>
-                            <Text style={styles.answerText}>{item.text}</Text>
-                        </View>
-                    )}
+                    renderItem={renderAnswerItem}
                     ListHeaderComponent={<Text style={styles.answersTitle}>Answers</Text>}
                 />
                 <TextInput
@@ -113,6 +139,13 @@ const styles = StyleSheet.create({
     },
     answerText: {
         fontSize: 16,
+    },
+    verifiedBadge: {
+        marginTop: 5,
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#4CAF50',
+        textAlign: 'right',
     },
     input: {
         borderWidth: 1,

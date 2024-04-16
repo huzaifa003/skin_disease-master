@@ -84,6 +84,7 @@ export default function App() {
       >
         <Tab.Screen name="DermatologistHome" component={DermatologistHome} options={{ title: 'Home' }} />
         <Tab.Screen name="ShowAppointments" component={ShowAppointments} options={{ title: 'Appointments' }} />
+        <Tab.Screen name='QuestionsScreen' component={QuestionsScreen} options={{title: "Questions"}} />
         <Tab.Screen name="MapScreen" component={MapScreen} options={{ title: 'Map' }} />
         <Tab.Screen
           name="Logout"
