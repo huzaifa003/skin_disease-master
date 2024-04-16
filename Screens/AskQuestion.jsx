@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert, ScrollView, TouchableOpacity, Text } from 'react-native';
-import { db } from '../Components/DB'; // Ensure this path is correct
+import { db, auth } from '../Components/DB'; // Make sure to import 'auth' from your Firebase setup
 import { ref, push, serverTimestamp } from 'firebase/database';
 
 const AskQuestion = ({ navigation }) => {
@@ -14,17 +14,23 @@ const AskQuestion = ({ navigation }) => {
             Alert.alert('Validation Error', 'Please fill in all fields.');
             return;
         }
-        const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-        console.log(tagsArray);
-        const newQuestionRef = ref(db, 'forums/questions');
+
+        // Get the current user's UID
+        const userId = auth.currentUser ? auth.currentUser.uid : null;
+        if (!userId) {
+            Alert.alert('Authentication Error', 'You are not logged in. Please log in and try again.');
+            return;
+        }
+
         const newQuestion = {
             title,
             description,
             tags: tagList,
-            userId: "userId", // This should be replaced with the actual user ID from your auth
+            userId: userId, // Attach the current user's UID
             timestamp: serverTimestamp()
         };
 
+        const newQuestionRef = ref(db, 'forums/questions');
         push(newQuestionRef, newQuestion)
             .then(() => {
                 Alert.alert('Success', 'Your question has been posted.');
@@ -43,7 +49,6 @@ const AskQuestion = ({ navigation }) => {
 
     const addTag = () => {
         if (tags.trim() !== '' && !tagList.includes(tags.trim())) {
-            console.log("HEllo");
             setTagList([...tagList, tags.trim()]);
             setTags('');
         }
