@@ -1,20 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-
-import { StyleSheet, View, Text } from 'react-native';
-import { useState, useEffect } from "react";
-import { Platform } from 'react-native';
-
 import * as Location from 'expo-location';
 
-
 export default function MapScreen() {
-
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
+    const [uvData, setUvData] = useState(null);
+
     useEffect(() => {
         (async () => {
-
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 setErrorMsg('Permission to access location was denied');
@@ -23,23 +18,44 @@ export default function MapScreen() {
 
             let location = await Location.getCurrentPositionAsync({});
             setLocation(location);
+            console.log(location);
+            // Assume fetchUVData is a function that fetches UV data from the API
+            const uvData = await fetchUVData(location.coords.latitude, location.coords.longitude);
+            setUvData(uvData);
         })();
     }, []);
 
-    let text = 'Waiting..';
-    if (errorMsg) {
-        text = errorMsg;
-    } else if (location) {
-        text = JSON.stringify(location);
-    }
-
-    const destination = {
-        latitude: 31.469680360026764,
-        longitude: 74.38800865924226,
+    const fetchUVData = async (latitude, longitude) => {
+        const myHeaders = new Headers();
+        myHeaders.append("x-access-token", "openuv-1xtcbw5rlv2nojwy-io");
+        myHeaders.append("Content-Type", "application/json");
+    
+        const requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+            redirect: 'follow'
+        };
+    
+        try {
+            const response = await fetch(`https://api.openuv.io/api/v1/uv?lat=${latitude}&lng=${longitude}&alt=100&dt=`, requestOptions);
+            const result = await response.json(); // Parse JSON response
+            console.log(result); // Log the full response
+            return {
+                uv: result.result.uv, // Accessing 'result' key inside your JSON response
+                uv_max: result.result.uv_max,
+                
+            };
+        } catch (error) {
+            console.error('error', error);
+            return null; // Handle error, return null or default data structure
+        }
     };
+
     return (
         <View style={styles.container}>
-            {text !== "Waiting.." ? location && (
+            {errorMsg ? (
+                <Text style={styles.overlayText}>{errorMsg}</Text>
+            ) : location ? (
                 <MapView
                     initialRegion={{
                         latitude: location.coords.latitude,
@@ -49,32 +65,24 @@ export default function MapScreen() {
                     }}
                     style={styles.map}
                 >
-                    {console.log(location)}
-
                     <Marker
-                        zoomEnabled={true}
-                        animationEnabled={true}
                         coordinate={{
                             latitude: location.coords.latitude,
                             longitude: location.coords.longitude,
                         }}
-                        title="My Location"
-                        description="I am currently Here"
+                        title="Current Location"
+                        description="Here I am!"
                     />
-
-                    <Marker
-                        zoomEnabled={true}
-                        pinColor='green'
-                        animationEnabled={true}
-                        coordinate={destination}
-                        title="Dermatologist Location"
-                        description="Visit here"
-                    />
-
+                    {uvData && (
+                        <View style={styles.uvOverlay}>
+                            <Text style={styles.uvText}>UV Index: {uvData.uv}</Text>
+                            <Text style={styles.uvText}>Max UV Today: {uvData.uv_max}</Text>
+                        </View>
+                    )}
                 </MapView>
-            ) : <Text style={styles.overlayText}> {text} </Text>}
-
-
+            ) : (
+                <Text style={styles.overlayText}>Loading...</Text>
+            )}
         </View>
     );
 }
@@ -99,5 +107,20 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: 'black',
+    },
+    uvOverlay: {
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 10,
+        borderRadius: 5,
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    uvText: {
+        color: 'white',
+        fontSize: 14,
     },
 });
