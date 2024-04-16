@@ -28,6 +28,7 @@ import GiveFeedback from './Screens/GiveFeedback';
 
 import { Context } from './Global/Context';
 import { DermatologistHome } from './Screens/DermatologistHome';
+import { GroupChatScreen } from './Screens/GroupChatScreen';
 
 export default function App() {
   const [background, setBackground] = React.useState("#FAF9F6");
@@ -126,6 +127,7 @@ export default function App() {
       >
         <Tab.Screen name="Home" component={PatientHome} options={{ title: 'Home' }} />
         <Tab.Screen name="CameraScreen" component={CameraScreen} options={{ title: 'Camera' }} />
+        <Tab.Screen name='GroupScreen' component={GroupChatScreen} options={{title: "Group Chat"}} />
         <Tab.Screen name="MapScreen" component={MapScreen} options={{ title: 'Map' }} />
         <Tab.Screen
           name="Logout"
@@ -188,6 +190,7 @@ export default function App() {
           <>
             <Tab.Screen name="Home" component={Home} />
             <Tab.Screen name="CameraScreen" component={CameraScreen} />
+            <Tab.Screen name='GroupScreen' component={GroupChatScreen} />
           </>
         )}
         <Tab.Screen name="MapScreen" component={MapScreen} />
